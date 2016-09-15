@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.smartsoftasia.library.AudioPlayerView;
 import com.smartsoftasia.library.RxAudioRecorder;
 
 import rx.functions.Action1;
@@ -16,10 +17,14 @@ public class MainActivity extends AppCompatActivity {
   private static final String AUDIO_FILE_PATH = Environment.getExternalStorageDirectory() + "/recorded_audio.wav";
   private static final int RECORD_AUDIO = 0;
 
+  private AudioPlayerView mAudioPlayerView;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    mAudioPlayerView = (AudioPlayerView) findViewById(R.id.audioplayerview);
 
     if (getSupportActionBar() != null) {
       getSupportActionBar().setBackgroundDrawable(
@@ -31,8 +36,7 @@ public class MainActivity extends AppCompatActivity {
     RxAudioRecorder.with(getApplicationContext()).requestAudio(AUDIO_FILE_PATH, getResources().getColor(R.color.recorder_bg)).subscribe(new Action1<String>() {
       @Override
       public void call(String s) {
-        Log.e("", s);
-
+        mAudioPlayerView.setMediaUrl(s);
       }
     });
 
