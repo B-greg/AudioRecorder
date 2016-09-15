@@ -65,19 +65,7 @@ public class AudioPlayerView extends LinearLayout {
         onPlayButtonClick();
       }
     });
-    mPlayer = new MediaPlayer();
-    mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        mPLayButton.setImageResource(R.drawable.aar_ic_play);
-      }
-    });
-    mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-      @Override
-      public void onPrepared(MediaPlayer mp) {
-        setupProgressbar();
-      }
-    });
+
 
   }
 
@@ -91,13 +79,31 @@ public class AudioPlayerView extends LinearLayout {
   }
 
   private void prepareMediaFile() throws IOException {
-    if (mPlayer.isPlaying()){
-      mPlayer.release();
+    if (mPlayer == null){
+      initPlayer();
+    }else{
+      mPlayer.stop();
+      mPlayer.reset();
     }
-    mPlayer.reset();
     mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     mPlayer.setDataSource(mMediaUrl);
-    mPlayer.prepare();
+    mPlayer.prepareAsync();
+  }
+
+  private void initPlayer(){
+    mPlayer = new MediaPlayer();
+    mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mp) {
+        mPLayButton.setImageResource(R.drawable.aar_ic_play);
+      }
+    });
+    mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+      @Override
+      public void onPrepared(MediaPlayer mp) {
+        setupProgressbar();
+      }
+    });
   }
 
   private void onPlayButtonClick() {
