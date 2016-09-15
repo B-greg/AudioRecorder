@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,11 +18,14 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.cleveroad.audiovisualization.DbmHandler;
 import com.cleveroad.audiovisualization.GLAudioVisualizationView;
+
 import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import omrecorder.AudioChunk;
 import omrecorder.OmRecorder;
 import omrecorder.PullTransport;
@@ -34,7 +38,8 @@ public class AudioRecorderActivity extends AppCompatActivity
   private Recorder recorder;
   private VisualizerHandler visualizerHandler;
 
-  private String filePath;
+  private String dirName;
+  private String fineName;
   private int color;
 
   private Timer timer;
@@ -58,14 +63,13 @@ public class AudioRecorderActivity extends AppCompatActivity
 
 
     if (savedInstanceState != null) {
-      filePath = savedInstanceState.getString(RxAudioRecorder.EXTRA_FILE_PATH);
+      dirName = savedInstanceState.getString(RxAudioRecorder.EXTRA_FILE_PATH);
       color = savedInstanceState.getInt(RxAudioRecorder.EXTRA_COLOR);
     } else {
       handleIntent(getIntent());
-      filePath = getIntent().getStringExtra(RxAudioRecorder.EXTRA_FILE_PATH);
+      dirName = getIntent().getStringExtra(RxAudioRecorder.EXTRA_FILE_PATH);
       color = getIntent().getIntExtra(RxAudioRecorder.EXTRA_COLOR, Color.BLACK);
     }
-
 
 
     if (getSupportActionBar() != null) {
@@ -74,7 +78,8 @@ public class AudioRecorderActivity extends AppCompatActivity
       getSupportActionBar().setDisplayShowTitleEnabled(false);
       getSupportActionBar().setElevation(0);
       getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Util.getDarkerColor(color)));
-      getSupportActionBar().setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.aar_ic_clear));
+      getSupportActionBar()
+          .setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.aar_ic_clear));
     }
 
     visualizerView = new GLAudioVisualizationView.Builder(this).setLayersCount(1)
@@ -85,7 +90,7 @@ public class AudioRecorderActivity extends AppCompatActivity
         .setBubblesSize(R.dimen.aar_bubble_size)
         .setBubblesRandomizeSize(true)
         .setBackgroundColor(Util.getDarkerColor(color))
-        .setLayerColors(new int[] { color })
+        .setLayerColors(new int[]{color})
         .build();
 
     contentLayout = (RelativeLayout) findViewById(R.id.content);
@@ -163,7 +168,7 @@ public class AudioRecorderActivity extends AppCompatActivity
 
   @Override
   protected void onSaveInstanceState(Bundle outState) {
-    outState.putString(RxAudioRecorder.EXTRA_FILE_PATH, filePath);
+    outState.putString(RxAudioRecorder.EXTRA_FILE_PATH, dirName);
     outState.putInt(RxAudioRecorder.EXTRA_COLOR, color);
     super.onSaveInstanceState(outState);
   }
@@ -200,7 +205,7 @@ public class AudioRecorderActivity extends AppCompatActivity
 
   private void selectAudio() {
     stopRecording();
-    RxAudioRecorder.with(this).onAudioPicked(filePath);
+    RxAudioRecorder.with(this).onAudioPicked(dirName);
     finish();
   }
 
@@ -245,22 +250,22 @@ public class AudioRecorderActivity extends AppCompatActivity
         visualizerHandler.stop();
       }
     }
-    if(saveMenuItem != null){
+    if (saveMenuItem != null) {
       saveMenuItem.setVisible(false);
     }
-    if(statusView != null){
+    if (statusView != null) {
       statusView.setVisibility(View.INVISIBLE);
     }
-    if(restartView != null){
+    if (restartView != null) {
       restartView.setVisibility(View.INVISIBLE);
     }
-    if(playView != null){
+    if (playView != null) {
       playView.setVisibility(View.INVISIBLE);
     }
-    if(recordView != null){
+    if (recordView != null) {
       recordView.setImageResource(R.drawable.aar_ic_rec);
     }
-    if(timerView != null){
+    if (timerView != null) {
       timerView.setText("00:00:00");
     }
     recorderSecondsElapsed = 0;
@@ -282,9 +287,16 @@ public class AudioRecorderActivity extends AppCompatActivity
 
     if (recorder == null) {
       timerView.setText("00:00:00");
+      File folderFile = Environment.getExternalStoragePublicDirectory(
+          Environment.DIRECTORY_PODCASTS + File.separator + dirName);
+      if (!folderFile.exists()) {
+        folderFile.mkdirs();
+      }
+      fineName = folderFile.getAbsolutePath() + File.separator + System
+          .currentTimeMillis() + ".wav";
 
       recorder = OmRecorder.wav(
-          new PullTransport.Default(Util.getMic(), AudioRecorderActivity.this), new File(filePath));
+          new PullTransport.Default(Util.getMic(), AudioRecorderActivity.this), new File(fineName));
     }
     recorder.resumeRecording();
 
@@ -334,7 +346,7 @@ public class AudioRecorderActivity extends AppCompatActivity
     try {
       stopRecording();
       player = new MediaPlayer();
-      player.setDataSource(filePath);
+      player.setDataSource(fineName);
       player.prepare();
       player.start();
 
@@ -427,19 +439,18 @@ public class AudioRecorderActivity extends AppCompatActivity
     }
 
 
-
   }
 
   private boolean checkPermission() {
     if (ContextCompat.checkSelfPermission(AudioRecorderActivity.this,
         Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(AudioRecorderActivity.this,
-          new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
+          new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
       return false;
     } else if (ContextCompat.checkSelfPermission(AudioRecorderActivity.this,
         Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(AudioRecorderActivity.this,
-          new String[] { Manifest.permission.RECORD_AUDIO }, 0);
+          new String[]{Manifest.permission.RECORD_AUDIO}, 0);
       return false;
     } else {
       return true;

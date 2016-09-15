@@ -26,7 +26,7 @@ public class RxAudioRecorder {
 
   private static RxAudioRecorder instance;
 
-  private String filePath = Environment.getExternalStorageDirectory() + "/recorded_audio.wav";
+  private String dirName = "audio";
   private int color = Color.parseColor("#546E7A");
 
   public static synchronized RxAudioRecorder with(Context context) {
@@ -47,9 +47,9 @@ public class RxAudioRecorder {
     return publishSubject;
   }
 
-  public Observable<String> requestAudio(@Nullable  String filePath, @Nullable Integer color ) {
-    if (filePath!= null){
-      this.filePath = filePath;
+  public Observable<String> requestAudio(@Nullable  String dirName, @Nullable Integer color ) {
+    if (dirName!= null){
+      this.dirName = dirName;
     }
     if ( color != null){
       this.color = color;
@@ -71,7 +71,7 @@ public class RxAudioRecorder {
   private void startAudioRecordPickHiddenActivity() {
     Intent intent = new Intent(context, AudioRecorderActivity.class);
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    intent.putExtra(EXTRA_FILE_PATH, filePath);
+    intent.putExtra(EXTRA_FILE_PATH, dirName);
     intent.putExtra(EXTRA_COLOR, color);
     context.startActivity(intent);
   }
