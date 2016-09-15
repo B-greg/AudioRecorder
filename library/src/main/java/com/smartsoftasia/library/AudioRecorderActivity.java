@@ -205,7 +205,7 @@ public class AudioRecorderActivity extends AppCompatActivity
 
   private void selectAudio() {
     stopRecording();
-    RxAudioRecorder.with(this).onAudioPicked(dirName);
+    RxAudioRecorder.with(this).onAudioPicked(fineName);
     finish();
   }
 
