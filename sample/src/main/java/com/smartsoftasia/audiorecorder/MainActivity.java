@@ -1,15 +1,15 @@
 package com.smartsoftasia.audiorecorder;
 
-import android.Manifest;
-import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
-import com.smartsoftasia.library.AndroidAudioRecorder;
-import com.smartsoftasia.library.Util;
+
+import com.smartsoftasia.library.RxAudioRecorder;
+
+import rx.functions.Action1;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
   }
 
   public void recordAudio(View v) {
-    AndroidAudioRecorder.with(this)
-        .setFilePath(AUDIO_FILE_PATH)
-        .setColor(getResources().getColor(R.color.recorder_bg))
-        .setRequestCode(RECORD_AUDIO)
-        .record();
+    RxAudioRecorder.with(getApplicationContext()).requestAudio(AUDIO_FILE_PATH, getResources().getColor(R.color.recorder_bg)).subscribe(new Action1<String>() {
+      @Override
+      public void call(String s) {
+        Log.e("", s);
+
+      }
+    });
+
   }
 }

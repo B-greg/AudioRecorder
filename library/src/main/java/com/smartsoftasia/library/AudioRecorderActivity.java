@@ -58,12 +58,12 @@ public class AudioRecorderActivity extends AppCompatActivity
 
 
     if (savedInstanceState != null) {
-      filePath = savedInstanceState.getString(AndroidAudioRecorder.EXTRA_FILE_PATH);
-      color = savedInstanceState.getInt(AndroidAudioRecorder.EXTRA_COLOR);
+      filePath = savedInstanceState.getString(RxAudioRecorder.EXTRA_FILE_PATH);
+      color = savedInstanceState.getInt(RxAudioRecorder.EXTRA_COLOR);
     } else {
       handleIntent(getIntent());
-      filePath = getIntent().getStringExtra(AndroidAudioRecorder.EXTRA_FILE_PATH);
-      color = getIntent().getIntExtra(AndroidAudioRecorder.EXTRA_COLOR, Color.BLACK);
+      filePath = getIntent().getStringExtra(RxAudioRecorder.EXTRA_FILE_PATH);
+      color = getIntent().getIntExtra(RxAudioRecorder.EXTRA_COLOR, Color.BLACK);
     }
 
 
@@ -74,8 +74,7 @@ public class AudioRecorderActivity extends AppCompatActivity
       getSupportActionBar().setDisplayShowTitleEnabled(false);
       getSupportActionBar().setElevation(0);
       getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Util.getDarkerColor(color)));
-      getSupportActionBar().setHomeAsUpIndicator(
-          getResources().getDrawable(R.drawable.aar_ic_clear));
+      getSupportActionBar().setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.aar_ic_clear));
     }
 
     visualizerView = new GLAudioVisualizationView.Builder(this).setLayersCount(1)
@@ -102,9 +101,9 @@ public class AudioRecorderActivity extends AppCompatActivity
     playView.setVisibility(View.INVISIBLE);
 
     if (Util.isBrightColor(color)) {
-      getResources().getDrawable(R.drawable.aar_ic_clear)
+      ContextCompat.getDrawable(this, R.drawable.aar_ic_clear)
           .setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_ATOP);
-      getResources().getDrawable(R.drawable.aar_ic_check)
+      ContextCompat.getDrawable(this, R.drawable.aar_ic_check)
           .setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_ATOP);
       statusView.setTextColor(Color.BLACK);
       timerView.setTextColor(Color.BLACK);
@@ -164,8 +163,8 @@ public class AudioRecorderActivity extends AppCompatActivity
 
   @Override
   protected void onSaveInstanceState(Bundle outState) {
-    outState.putString(AndroidAudioRecorder.EXTRA_FILE_PATH, filePath);
-    outState.putInt(AndroidAudioRecorder.EXTRA_COLOR, color);
+    outState.putString(RxAudioRecorder.EXTRA_FILE_PATH, filePath);
+    outState.putInt(RxAudioRecorder.EXTRA_COLOR, color);
     super.onSaveInstanceState(outState);
   }
 
@@ -201,7 +200,7 @@ public class AudioRecorderActivity extends AppCompatActivity
 
   private void selectAudio() {
     stopRecording();
-    setResult(RESULT_OK);
+    RxAudioRecorder.with(this).onAudioPicked(filePath);
     finish();
   }
 
