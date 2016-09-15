@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -25,6 +26,7 @@ public class AudioPlayerView extends LinearLayout {
   private LayoutInflater mInflater;
   private MediaPlayer mPlayer;
   private ImageButton mPLayButton;
+  private TextView mTimeTextView;
   private String mMediaUrl;
   private ProgressBar mProgressBar;
   private Handler handler = new Handler();
@@ -56,6 +58,7 @@ public class AudioPlayerView extends LinearLayout {
     View v = mInflater.inflate(R.layout.layout_audio_player_view, this, true);
     mPLayButton = (ImageButton) v.findViewById(R.id.button_play);
     mProgressBar = (ProgressBar) v.findViewById(R.id.progressBar);
+    mTimeTextView = (TextView) v.findViewById(R.id.textView);
     mPLayButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -88,6 +91,10 @@ public class AudioPlayerView extends LinearLayout {
   }
 
   private void prepareMediaFile() throws IOException {
+    if (mPlayer.isPlaying()){
+      mPlayer.release();
+    }
+    mPlayer.reset();
     mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     mPlayer.setDataSource(mMediaUrl);
     mPlayer.prepare();
@@ -100,6 +107,7 @@ public class AudioPlayerView extends LinearLayout {
     } else {
       mPlayer.start();
       mPLayButton.setImageResource(R.drawable.aar_ic_pause);
+      setupProgressbar();
     }
   }
 
@@ -110,14 +118,19 @@ public class AudioPlayerView extends LinearLayout {
       public void run() {
         int currentPosition = mPlayer.getCurrentPosition();
 
-        if (currentPosition <= duration) {
+        if (currentPosition < duration) {
           int position = Math.round((currentPosition*100)/duration);
           mProgressBar.setProgress(position);
-          handler.postDelayed(this, UPDATE_INTERVAL);
+          mTimeTextView.setText(Util.formatMiliSeconds(currentPosition));
+          if (mPlayer.isPlaying()){
+            handler.postDelayed(this, UPDATE_INTERVAL);
+          }
         }
       }
     };
-    handler.postDelayed(r, UPDATE_INTERVAL);
+    if (duration > 0){
+      handler.postDelayed(r, UPDATE_INTERVAL);
+    }
 
   }
 }
