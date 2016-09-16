@@ -2,10 +2,15 @@ package com.smartsoftasia.library;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +20,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by androiddev01 on 9/15/2016 AD.
@@ -32,33 +35,53 @@ public class AudioPlayerView extends LinearLayout {
   private Handler handler = new Handler();
 
 
+
   public AudioPlayerView(Context context) {
     super(context);
-    init(context);
+    init(context, null);
   }
 
   public AudioPlayerView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init(context);
+    init(context, attrs);
   }
 
   public AudioPlayerView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    init(context);
+    init(context, attrs);
   }
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   public AudioPlayerView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
     super(context, attrs, defStyleAttr, defStyleRes);
-    init(context);
+    init(context, attrs);
   }
 
-  private void init(Context context) {
+  private void init(Context context, AttributeSet attributeSet) {
+    Integer textColor = null;
+    Drawable progressDrawable = null;
+
+    if (attributeSet != null) {
+      TypedArray a = context.obtainStyledAttributes(attributeSet, R.styleable.AudioPlayer);
+      textColor = a.getColor(R.styleable.AudioPlayer_textColor, 0);
+      progressDrawable = a.getDrawable(R.styleable.AudioPlayer_progressbar);
+    }
+
+
     mInflater = LayoutInflater.from(context);
     View v = mInflater.inflate(R.layout.layout_audio_player_view, this, true);
     mPLayButton = (ImageButton) v.findViewById(R.id.button_play);
     mProgressBar = (ProgressBar) v.findViewById(R.id.progressBar);
     mTimeTextView = (TextView) v.findViewById(R.id.textView);
+
+    if (textColor != null && textColor != 0) {
+      mTimeTextView.setTextColor(textColor);
+    }
+
+    if (progressDrawable != null) {
+      mProgressBar.setProgressDrawable(progressDrawable);
+    }
+
     mPLayButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -67,6 +90,15 @@ public class AudioPlayerView extends LinearLayout {
     });
 
 
+  }
+
+
+  public void setTextColor(@ColorRes int color) {
+    mTimeTextView.setTextColor(ContextCompat.getColor(getContext(), color));
+  }
+
+  public void setProgressDrawable(@DrawableRes int drawable) {
+    mProgressBar.setProgressDrawable(ContextCompat.getDrawable(getContext(), drawable));
   }
 
   public void setMediaUrl(String mediaUrl) {
@@ -79,9 +111,9 @@ public class AudioPlayerView extends LinearLayout {
   }
 
   private void prepareMediaFile() throws IOException {
-    if (mPlayer == null){
+    if (mPlayer == null) {
       initPlayer();
-    }else{
+    } else {
       mPlayer.stop();
       mPlayer.reset();
     }
@@ -90,7 +122,7 @@ public class AudioPlayerView extends LinearLayout {
     mPlayer.prepareAsync();
   }
 
-  private void initPlayer(){
+  private void initPlayer() {
     mPlayer = new MediaPlayer();
     mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
       @Override
@@ -117,7 +149,7 @@ public class AudioPlayerView extends LinearLayout {
     }
   }
 
-  private void setupProgressbar(){
+  private void setupProgressbar() {
     final int duration = mPlayer.getDuration();
     final int UPDATE_INTERVAL = 41;
     final Runnable r = new Runnable() {
@@ -125,16 +157,16 @@ public class AudioPlayerView extends LinearLayout {
         int currentPosition = mPlayer.getCurrentPosition();
 
         if (currentPosition < duration) {
-          int position = Math.round((currentPosition*100)/duration);
+          int position = Math.round((currentPosition * 100) / duration);
           mProgressBar.setProgress(position);
           mTimeTextView.setText(Util.formatMiliSeconds(currentPosition));
-          if (mPlayer.isPlaying()){
+          if (mPlayer.isPlaying()) {
             handler.postDelayed(this, UPDATE_INTERVAL);
           }
         }
       }
     };
-    if (duration > 0){
+    if (duration > 0) {
       handler.postDelayed(r, UPDATE_INTERVAL);
     }
 
