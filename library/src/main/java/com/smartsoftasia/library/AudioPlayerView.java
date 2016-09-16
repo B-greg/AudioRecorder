@@ -133,9 +133,9 @@ public class AudioPlayerView extends LinearLayout {
 
   private void updateButton(){
     if (mPlayer.isPlaying()){
-      mPLayButton.setImageDrawable(mPlayButtonResource);
-    }else{
       mPLayButton.setImageDrawable(mPauseButtonResource);
+    }else{
+      mPLayButton.setImageDrawable(mPlayButtonResource);
 
     }
   }
