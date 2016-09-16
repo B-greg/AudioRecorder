@@ -5,6 +5,8 @@
   <declare-styleable name="AudioPlayer">
     <attr name="textColor" format="color" />
     <attr name="progressbar" format="reference" />
+    <attr name="playButton" format="reference" />
+    <attr name="pauseButton" format="reference" />
   </declare-styleable>
 
 </resources>

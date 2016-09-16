@@ -32,8 +32,9 @@ public class AudioPlayerView extends LinearLayout {
   private TextView mTimeTextView;
   private String mMediaUrl;
   private ProgressBar mProgressBar;
+  private Drawable mPlayButtonResource;
+  private Drawable mPauseButtonResource;
   private Handler handler = new Handler();
-
 
 
   public AudioPlayerView(Context context) {
@@ -60,11 +61,21 @@ public class AudioPlayerView extends LinearLayout {
   private void init(Context context, AttributeSet attributeSet) {
     Integer textColor = null;
     Drawable progressDrawable = null;
+    mPlayButtonResource = ContextCompat.getDrawable(getContext(), R.drawable.aar_ic_play);
+    mPauseButtonResource = ContextCompat.getDrawable(getContext(), R.drawable.aar_ic_pause);
 
     if (attributeSet != null) {
       TypedArray a = context.obtainStyledAttributes(attributeSet, R.styleable.AudioPlayer);
       textColor = a.getColor(R.styleable.AudioPlayer_textColor, 0);
       progressDrawable = a.getDrawable(R.styleable.AudioPlayer_progressbar);
+      Drawable drawablePlay = a.getDrawable(R.styleable.AudioPlayer_playButton);
+      Drawable drawablePause = a.getDrawable(R.styleable.AudioPlayer_pauseButton);
+      if (drawablePlay != null) {
+        mPlayButtonResource = drawablePlay;
+      }
+      if (drawablePause != null) {
+        mPauseButtonResource = drawablePause;
+      }
     }
 
 
@@ -101,12 +112,31 @@ public class AudioPlayerView extends LinearLayout {
     mProgressBar.setProgressDrawable(ContextCompat.getDrawable(getContext(), drawable));
   }
 
+  public void setPauseButtonResource(Drawable pauseButtonResource) {
+    mPauseButtonResource = pauseButtonResource;
+    updateButton();
+  }
+
+  public void setPlayButtonResource(Drawable playButtonResource) {
+    mPlayButtonResource = playButtonResource;
+    updateButton();
+  }
+
   public void setMediaUrl(String mediaUrl) {
     mMediaUrl = mediaUrl;
     try {
       prepareMediaFile();
     } catch (IOException e) {
       e.printStackTrace();
+    }
+  }
+
+  private void updateButton(){
+    if (mPlayer.isPlaying()){
+      mPLayButton.setImageDrawable(mPlayButtonResource);
+    }else{
+      mPLayButton.setImageDrawable(mPauseButtonResource);
+
     }
   }
 
@@ -127,7 +157,7 @@ public class AudioPlayerView extends LinearLayout {
     mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
       @Override
       public void onCompletion(MediaPlayer mp) {
-        mPLayButton.setImageResource(R.drawable.aar_ic_play);
+        mPLayButton.setImageDrawable(mPlayButtonResource);
       }
     });
     mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -141,10 +171,10 @@ public class AudioPlayerView extends LinearLayout {
   private void onPlayButtonClick() {
     if (mPlayer.isPlaying()) {
       mPlayer.pause();
-      mPLayButton.setImageResource(R.drawable.aar_ic_play);
+      mPLayButton.setImageDrawable(mPlayButtonResource);
     } else {
       mPlayer.start();
-      mPLayButton.setImageResource(R.drawable.aar_ic_pause);
+      mPLayButton.setImageDrawable(mPauseButtonResource);
       setupProgressbar();
     }
   }
